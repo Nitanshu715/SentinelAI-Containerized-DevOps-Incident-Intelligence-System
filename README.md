@@ -764,40 +764,40 @@ docker compose build --no-cache
 
 The following screenshots are required as assignment proof. Capture them after successfully running `docker compose up`.
 
-**Screenshot 1 — Swagger UI**
+**Screenshot — Swagger UI**
 Open `http://localhost:8000/docs` in a browser. Captures proof that the backend API container is running and API documentation is accessible.
 
-**Screenshot 2 — Health Endpoint**
+**Screenshot — Health Endpoint**
 Execute `GET /health` in Swagger. Expected response: `{ "status": "running" }`. Proves backend is responding to requests.
 
-**Screenshot 3 — Insert Incident**
+**Screenshot — Insert Incident**
 Execute `POST /incidents` with `service_name=payment-api`, `severity=critical`, `downtime=50`, `region=ap-south-1`. Expected: `{ "message": "incident stored" }`. Proves write path to PostgreSQL is operational.
 
-**Screenshot 4 — Fetch Incidents**
+**Screenshot — Fetch Incidents**
 Execute `GET /incidents`. Expected: JSON array of all inserted records. Proves read path from PostgreSQL is operational.
 
-**Screenshot 5 — AI Risk Analysis**
+**Screenshot — AI Risk Analysis**
 After inserting 5+ incidents, execute `GET /ai/risk-analysis`. Expected: `{ "anomalous_downtime": [50] }`. Proves ML endpoint is functioning.
 
-**Screenshot 6 — Running Containers**
+**Screenshot — Running Containers**
 ```bash
 docker ps
 ```
 Shows both `sentinel-backend` and `sentinel-db` containers with status `Up`.
 
-**Screenshot 7 — Network Inspection**
+**Screenshot — Network Inspection**
 ```bash
 docker network inspect sentinel-ai_sentinel-net
 ```
 Shows container names, IPs, and network driver configuration.
 
-**Screenshot 8 — Volume**
+**Screenshot — Volume**
 ```bash
 docker volume ls
 ```
 Shows `sentinel-ai_postgres_data` volume exists.
 
-**Screenshot 9 — Persistence Test**
+**Screenshot — Persistence Test**
 Run `GET /incidents`, then `docker compose down`, then `docker compose up`, then `GET /incidents` again. Both responses show identical data. Proves named volume persistence.
 
 ---
