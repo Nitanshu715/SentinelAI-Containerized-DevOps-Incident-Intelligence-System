@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelAI &bull; Autonomous Incident Intelligence & Anomaly Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            },
+            cyber: {
+              bg: '#05070e',
+              surface: '#0c101c',
+              card: 'rgba(15, 23, 42, 0.75)',
+              border: '#1e293b',
+              neonCyan: '#06b6d4',
+              neonRose: '#f43f5e',
+              neonEmerald: '#10b981',
+              neonAmber: '#f59e0b',
+              neonPurple: '#a855f7'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    body {
+      background-color: #060913;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(244, 63, 94, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .glass-panel {
+      background: rgba(12, 18, 33, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-panel:hover {
+      border-color: rgba(6, 182, 212, 0.3);
+    }
+
+    .cyber-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+
+    .glow-rose {
+      box-shadow: 0 0 30px -5px rgba(244, 63, 94, 0.35);
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070b14; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-500 selection:text-white cyber-grid">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-4">
+        <div class="relative">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/25 ring-1 ring-white/20">
+            <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-950 rounded-full animate-pulse"></span>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2.5">
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">SentinelAI</span>
+            <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Enterprise v2.4</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Containerized Incident Intelligence & Anomaly Detection System</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <div class="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-400">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span id="liveClock">00:00:00 UTC</span>
+        </div>
+
+        <button onclick="chaosInject()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition flex items-center gap-1.5 shadow-sm" title="Simulate realistic outage spike">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-rose-400"></i>
+          <span>Simulate Outage</span>
+        </button>
+
+        <button id="seedBtn" onclick="seedDemoData()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Seed Telemetry</span>
+        </button>
+
+        <button onclick="openModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/20">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Log Incident</span>
+        </button>
+
+        <div class="h-6 w-px bg-slate-800 hidden sm:block"></div>
+
+        <a href="/docs" target="_blank" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition border border-transparent hover:border-slate-700" title="Swagger OpenAPI Documentation">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Cluster / Infrastructure Real-Time Health Ribbon -->
+    <div class="glass-panel rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-4">
+        
+        <div class="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div>
+            <div class="text-[11px] font-bold text-slate-200">sentinel-backend</div>
+            <div class="text-[9px] font-mono text-emerald-400">FastAPI &bull; HTTP :8000 &bull; Online</div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          <div>
+            <div class="text-[11px] font-bold text-slate-200">sentinel-db</div>
+            <div class="text-[9px] font-mono text-emerald-400">PostgreSQL 15 &bull; TCP :5432 &bull; Active</div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+          <div>
+            <div class="text-[11px] font-bold text-slate-200">isolation-forest</div>
+            <div class="text-[9px] font-mono text-cyan-400">scikit-learn &bull; Contam: 0.20 &bull; Ready</div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          <div>
+            <div class="text-[11px] font-bold text-slate-200">postgres_data</div>
+            <div class="text-[9px] font-mono text-purple-400">Named Volume &bull; ACID Durable</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex items-center space-x-3 text-xs">
+        <label class="flex items-center space-x-2 cursor-pointer text-slate-400 hover:text-slate-300">
+          <input type="checkbox" id="autoSyncCheckbox" checked onchange="toggleAutoSync()" class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0">
+          <span class="text-[11px]">Auto-Sync (5s)</span>
+        </label>
+        <button onclick="fetchData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" id="refreshIcon" class="w-3.5 h-3.5"></i>
+          <span>Sync Now</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards (6-Grid Modern Overview) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+      
+      <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Ingested</span>
+          <div class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400"><i data-lucide="layers" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span id="metricTotalIncidents" class="text-2xl lg:text-3xl font-extrabold text-white">0</span>
+          <span class="text-[11px] text-slate-400 font-mono">events</span>
+        </div>
+        <div class="mt-2 text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
+          <i data-lucide="check-circle" class="w-3 h-3"></i> 100% Ingest Reliability
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">MTTR / Avg Downtime</span>
+          <div class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400"><i data-lucide="timer" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span id="metricAvgDowntime" class="text-2xl lg:text-3xl font-extrabold text-cyan-300">0</span>
+          <span class="text-[11px] text-slate-400 font-mono">min/event</span>
+        </div>
+        <div class="mt-2 text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+          <span id="metricMaxDowntime">Max: 0m</span> &bull; <span id="metricMinDowntime">Min: 0m</span>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group border-rose-500/20 glow-rose">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400">AI Outliers Flagged</span>
+          <div class="p-1.5 rounded-lg bg-rose-500/10 text-rose-400"><i data-lucide="alert-octagon" class="w-4 h-4 animate-pulse"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span id="metricAnomalies" class="text-2xl lg:text-3xl font-extrabold text-rose-400">0</span>
+          <span class="text-[11px] text-rose-300/80 font-mono">anomalies</span>
+        </div>
+        <div class="mt-2 text-[10px] text-rose-400 flex items-center gap-1 font-medium">
+          <i data-lucide="sparkles" class="w-3 h-3"></i> Isolation Forest Score &gt;80%
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-orange-400">Critical Incidents</span>
+          <div class="p-1.5 rounded-lg bg-orange-500/10 text-orange-400"><i data-lucide="flame" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span id="metricCriticalCount" class="text-2xl lg:text-3xl font-extrabold text-orange-400">0</span>
+          <span class="text-[11px] text-slate-400 font-mono">critical</span>
+        </div>
+        <div class="mt-2 text-[10px] text-slate-400 flex items-center gap-1">
+          Requires urgent SRE triage
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Calculated SLA</span>
+          <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400"><i data-lucide="activity" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span id="metricSla" class="text-2xl lg:text-3xl font-extrabold text-emerald-400">99.9%</span>
+        </div>
+        <div class="mt-2 text-[10px] text-emerald-400/80 flex items-center gap-1 font-mono">
+          Global uptime target
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Regions</span>
+          <div class="p-1.5 rounded-lg bg-purple-500/10 text-purple-400"><i data-lucide="globe" class="w-4 h-4"></i></div>
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span id="metricRegionsCount" class="text-2xl lg:text-3xl font-extrabold text-purple-400">0</span>
+          <span class="text-[11px] text-slate-400 font-mono">cloud zones</span>
+        </div>
+        <div class="mt-2 text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+          Multi-Region Mesh
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Analytics Row (3 Visualizations) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Main Timeline Chart -->
+      <div class="lg:col-span-8 glass-panel p-6 rounded-2xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-4 h-4 text-cyan-400"></i>
+              Downtime Distribution & Isolation Forest Anomaly Boundary
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Real-time incident duration timeline with statistical outlier detection (<span class="text-rose-400 font-semibold">Red Bars</span> = Anomaly)</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="setChartType('bar')" id="btnBarChart" class="px-2.5 py-1 text-xs rounded-lg bg-slate-800 text-white font-medium border border-slate-700">Bar</button>
+            <button onclick="setChartType('line')" id="btnLineChart" class="px-2.5 py-1 text-xs rounded-lg bg-slate-900 text-slate-400 hover:text-white font-medium border border-slate-800">Trend Curve</button>
+          </div>
+        </div>
+        <div class="h-72 sm:h-80 w-full pt-2">
+          <canvas id="incidentChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Severity Breakdown Chart -->
+      <div class="lg:col-span-4 glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4">
+        <div class="border-b border-slate-800/80 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i>
+            Severity Distribution
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Categorized breakdown of all reported incidents</p>
+        </div>
+
+        <div class="h-48 sm:h-52 relative flex items-center justify-center">
+          <canvas id="severityChart"></canvas>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs">
+          <div class="flex items-center justify-between text-slate-300 font-semibold">
+            <span class="flex items-center gap-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-400"></i> AI Model Status:</span>
+            <span class="font-mono text-emerald-400">OPERATIONAL</span>
+          </div>
+          <div class="text-[11px] text-slate-400 leading-relaxed" id="aiDiagnosticDetail">
+            Isolation Forest calibrated. Recursively isolating statistical anomalies across the downtime feature space.
+          </div>
+          <div class="flex justify-between text-[11px] font-mono pt-1 border-t border-slate-800/80">
+            <span class="text-slate-400">Outlier Outages:</span>
+            <span id="detectedOutlierTags" class="text-rose-400 font-bold">None</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Service Scorecard & Regional Heatmap Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Microservice Scorecard -->
+      <div class="lg:col-span-6 glass-panel p-6 rounded-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="server" class="w-4 h-4 text-emerald-400"></i>
+            Microservice Reliability Scorecard
+          </h3>
+          <span class="text-xs font-mono text-slate-400">Live Breakdown</span>
+        </div>
+        <div id="serviceScorecardContainer" class="space-y-3">
+          <p class="text-xs text-slate-500 py-4 text-center">Awaiting incident telemetry stream...</p>
+        </div>
+      </div>
+
+      <!-- Regional Distribution Chart -->
+      <div class="lg:col-span-6 glass-panel p-6 rounded-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-4 h-4 text-cyan-400"></i>
+            Regional Outage Concentration (Cloud Zones)
+          </h3>
+          <span class="text-xs font-mono text-slate-400">AWS / GCP / Azure</span>
+        </div>
+        <div class="h-56 w-full pt-2">
+          <canvas id="regionChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Ledger Table -->
+    <div class="glass-panel p-6 rounded-2xl space-y-4">
+      
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i>
+            Operational Incident Telemetry Ledger
+          </h3>
+          <p class="text-xs text-slate-400">Directly synchronized with PostgreSQL 15 &bull; Real-time AI Anomaly Scoring</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Filter service or region..." class="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-900/90 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-48 sm:w-56 transition">
+          </div>
+
+          <select id="severityFilter" onchange="applyFilters()" class="px-3 py-1.5 text-xs rounded-xl bg-slate-900/90 border border-slate-700 text-slate-200 focus:outline-none focus:border-cyan-500 transition">
+            <option value="all">All Severities</option>
+            <option value="critical">Critical Only</option>
+            <option value="high">High Only</option>
+            <option value="medium">Medium Only</option>
+            <option value="low">Low Only</option>
+            <option value="anomaly">AI Anomalies Only</option>
+          </select>
+
+          <button onclick="exportCSV()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export CSV</span>
+          </button>
+
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800/80">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+            <tr>
+              <th class="px-4 py-3.5">Event ID</th>
+              <th class="px-4 py-3.5">Target Microservice</th>
+              <th class="px-4 py-3.5">Severity</th>
+              <th class="px-4 py-3.5">Downtime</th>
+              <th class="px-4 py-3.5">Cloud Region</th>
+              <th class="px-4 py-3.5">AI Isolation Status</th>
+              <th class="px-4 py-3.5">Recorded At</th>
+              <th class="px-4 py-3.5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="incidentsTableBody" class="divide-y divide-slate-800/60 bg-slate-950/40">
+            <tr>
+              <td colspan="8" class="px-4 py-12 text-center text-slate-500">
+                <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-cyan-400"></i>
+                Connecting to PostgreSQL telemetry engine...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-slate-500 pt-2 font-mono">
+        <span id="filteredCountLabel">Showing all records</span>
+        <span>Storage: PostgreSQL 15 ACID</span>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal -->
+  <div id="incidentModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel bg-slate-950/95 border border-slate-800 w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Log Infrastructure Incident</h3>
+            <p class="text-xs text-slate-400">Record outage telemetry to trigger real-time AI scoring</p>
+          </div>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="incidentForm" onsubmit="submitIncident(event)" class="space-y-4 text-xs">
+        
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1.5">Affected Service Name</label>
+          <input type="text" id="serviceName" required placeholder="e.g. payment-gateway, auth-service, database-cluster" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1.5">Severity Level</label>
+            <select id="severity" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-500 transition">
+              <option value="low">Low (Non-impactful)</option>
+              <option value="medium">Medium (Degraded)</option>
+              <option value="high">High (Service Disrupted)</option>
+              <option value="critical">Critical (Full Outage)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1.5">Downtime Duration (minutes)</label>
+            <input type="number" id="downtime" required min="1" max="10000" placeholder="e.g. 45" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1.5">Cloud Infrastructure Region</label>
+          <input type="text" id="region" required placeholder="e.g. us-east-1, eu-west-1, ap-south-1" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+        </div>
+
+        <div class="pt-4 flex justify-end space-x-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 transition font-semibold">Cancel</button>
+          <button type="submit" id="submitBtn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-lg shadow-cyan-500/25 transition flex items-center gap-2">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Commit Incident</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-6 mt-10 text-center text-xs text-slate-500 bg-slate-950/40">
+    <div class="max-w-[1600px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>SentinelAI Production Platform &bull; Unsupervised Isolation Forest Anomaly Detection</div>
+      <div class="font-mono text-slate-400">FastAPI &bull; SQLAlchemy &bull; PostgreSQL 15 &bull; Scikit-Learn</div>
+    </div>
+  </footer>
+
+  <script>
+    let allIncidents = [];
+    let anomalousValues = [];
+    let chartInstance = null;
+    let severityChartInstance = null;
+    let regionChartInstance = null;
+    let autoSyncInterval = null;
+    let currentChartType = 'bar';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initLiveClock();
+      initCharts();
+      fetchData();
+      toggleAutoSync();
+    });
+
+    function initLiveClock() {
+      function update() {
+        const now = new Date();
+        const el = document.getElementById('liveClock');
+        if (el) el.innerText = now.toUTCString().split(' ')[4] + ' UTC';
+      }
+      setInterval(update, 1000);
+      update();
+    }
+
+    function openModal() {
+      const modal = document.getElementById('incidentModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('incidentModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function toggleAutoSync() {
+      const checked = document.getElementById('autoSyncCheckbox').checked;
+      if (checked) {
+        if (!autoSyncInterval) {
+          autoSyncInterval = setInterval(fetchData, 5000);
+        }
+      } else {
+        if (autoSyncInterval) {
+          clearInterval(autoSyncInterval);
+          autoSyncInterval = null;
+        }
+      }
+    }
+
+    function setChartType(type) {
+      currentChartType = type;
+      document.getElementById('btnBarChart').className = type === 'bar' 
+        ? 'px-2.5 py-1 text-xs rounded-lg bg-slate-800 text-white font-medium border border-slate-700'
+        : 'px-2.5 py-1 text-xs rounded-lg bg-slate-900 text-slate-400 hover:text-white font-medium border border-slate-800';
+      document.getElementById('btnLineChart').className = type === 'line' 
+        ? 'px-2.5 py-1 text-xs rounded-lg bg-slate-800 text-white font-medium border border-slate-700'
+        : 'px-2.5 py-1 text-xs rounded-lg bg-slate-900 text-slate-400 hover:text-white font-medium border border-slate-800';
+
+      initMainChart();
+      updateCharts();
+    }
+
+    function initCharts() {
+      initMainChart();
+      initSeverityChart();
+      initRegionChart();
+    }
+
+    function initMainChart() {
+      const ctx = document.getElementById('incidentChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: currentChartType,
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Downtime (minutes)',
+            data: [],
+            backgroundColor: [],
+            borderColor: [],
+            borderWidth: 2,
+            borderRadius: currentChartType === 'bar' ? 6 : 0,
+            tension: 0.35,
+            fill: currentChartType === 'line',
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0c1221',
+              titleColor: '#38bdf8',
+              bodyColor: '#f1f5f9',
+              borderColor: '#1e293b',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw;
+                  const isAnomaly = anomalousValues.includes(val);
+                  return isAnomaly 
+                    ? `⚠️ DOWNTIME: ${val} mins [ANOMALY DETECTED]`
+                    : `✓ Downtime: ${val} mins [Nominal]`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', maxRotation: 45, minRotation: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    function initSeverityChart() {
+      const ctx = document.getElementById('severityChart').getContext('2d');
+      severityChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Critical', 'High', 'Medium', 'Low'],
+          datasets: [{
+            data: [0, 0, 0, 0],
+            backgroundColor: ['#f43f5e', '#fb923c', '#fbbf24', '#10b981'],
+            borderColor: '#0b0f19',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 }
+            }
+          }
+        }
+      });
+    }
+
+    function initRegionChart() {
+      const ctx = document.getElementById('regionChart').getContext('2d');
+      regionChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Incidents per Region',
+            data: [],
+            backgroundColor: 'rgba(56, 189, 248, 0.7)',
+            borderColor: '#38bdf8',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8', stepSize: 1 }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    async function fetchData() {
+      const icon = document.getElementById('refreshIcon');
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const [incidentsRes, aiRes] = await Promise.all([
+          fetch('/incidents'),
+          fetch('/ai/risk-analysis')
+        ]);
+
+        if (incidentsRes.ok) {
+          allIncidents = await incidentsRes.json();
+        }
+
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          anomalousValues = aiData.anomalous_downtime || [];
+          updateAiDiagnostics(aiData);
+        }
+
+        renderMetrics();
+        updateCharts();
+        renderServiceScorecard();
+        applyFilters();
+      } catch (err) {
+        console.error('Fetch error:', err);
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function updateAiDiagnostics(aiData) {
+      const detail = document.getElementById('aiDiagnosticDetail');
+      const tags = document.getElementById('detectedOutlierTags');
+
+      if (aiData.message === 'not enough incidents') {
+        detail.innerHTML = 'Awaiting minimum 5 incidents to build Isolation Forest tree partitions.';
+        tags.innerHTML = '<span class="text-amber-400">Need &ge; 5 records</span>';
+      } else if (anomalousValues.length > 0) {
+        detail.innerHTML = `Isolation Forest detected <strong class="text-rose-400">${anomalousValues.length} statistically anomalous outage(s)</strong> with high isolation tree anomaly scores.`;
+        tags.innerHTML = anomalousValues.map(v => `<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">${v}m</span>`).join(' ');
+      } else {
+        detail.innerHTML = 'All incident downtime metrics conform within normal baseline distributions.';
+        tags.innerHTML = '<span class="text-emerald-400">Zero Outliers</span>';
+      }
+    }
+
+    function renderMetrics() {
+      document.getElementById('metricTotalIncidents').innerText = allIncidents.length;
+
+      const downtimes = allIncidents.map(i => i.downtime_minutes || 0);
+      const totalDowntime = downtimes.reduce((a, b) => a + b, 0);
+      const avg = allIncidents.length > 0 ? (totalDowntime / allIncidents.length).toFixed(1) : 0;
+      document.getElementById('metricAvgDowntime').innerText = avg;
+
+      if (downtimes.length > 0) {
+        document.getElementById('metricMaxDowntime').innerText = `Max: ${Math.max(...downtimes)}m`;
+        document.getElementById('metricMinDowntime').innerText = `Min: ${Math.min(...downtimes)}m`;
+      }
+
+      const criticalCount = allIncidents.filter(i => (i.severity || '').toLowerCase() === 'critical').length;
+      document.getElementById('metricCriticalCount').innerText = criticalCount;
+
+      const anomalyCount = allIncidents.filter(i => anomalousValues.includes(i.downtime_minutes)).length;
+      document.getElementById('metricAnomalies').innerText = anomalyCount;
+
+      const regions = new Set(allIncidents.map(i => i.region || 'global'));
+      document.getElementById('metricRegionsCount').innerText = regions.size;
+
+      const totalPossibleMins = 30 * 24 * 60;
+      const uptimePercentage = Math.max(90.0, (100 - (totalDowntime / totalPossibleMins) * 100)).toFixed(2);
+      document.getElementById('metricSla').innerText = `${uptimePercentage}%`;
+    }
+
+    function updateCharts() {
+      if (!chartInstance) return;
+
+      const labels = allIncidents.map(i => `#${i.id} ${i.service_name}`);
+      const data = allIncidents.map(i => i.downtime_minutes);
+      
+      const bgColors = allIncidents.map(i => 
+        anomalousValues.includes(i.downtime_minutes) ? 'rgba(244, 63, 94, 0.85)' : 'rgba(14, 165, 233, 0.65)'
+      );
+      const borderColors = allIncidents.map(i => 
+        anomalousValues.includes(i.downtime_minutes) ? '#f43f5e' : '#38bdf8'
+      );
+
+      chartInstance.data.labels = labels;
+      chartInstance.data.datasets[0].data = data;
+      chartInstance.data.datasets[0].backgroundColor = currentChartType === 'line' ? 'rgba(14, 165, 233, 0.15)' : bgColors;
+      chartInstance.data.datasets[0].borderColor = currentChartType === 'line' ? '#38bdf8' : borderColors;
+      chartInstance.data.datasets[0].pointBackgroundColor = bgColors;
+      chartInstance.data.datasets[0].pointBorderColor = borderColors;
+      chartInstance.update();
+
+      if (severityChartInstance) {
+        const crit = allIncidents.filter(i => (i.severity || '').toLowerCase() === 'critical').length;
+        const high = allIncidents.filter(i => (i.severity || '').toLowerCase() === 'high').length;
+        const med = allIncidents.filter(i => (i.severity || '').toLowerCase() === 'medium').length;
+        const low = allIncidents.filter(i => (i.severity || '').toLowerCase() === 'low').length;
+
+        severityChartInstance.data.datasets[0].data = [crit, high, med, low];
+        severityChartInstance.update();
+      }
+
+      if (regionChartInstance) {
+        const regionCounts = {};
+        allIncidents.forEach(i => {
+          const r = i.region || 'global';
+          regionCounts[r] = (regionCounts[r] || 0) + 1;
+        });
+
+        regionChartInstance.data.labels = Object.keys(regionCounts);
+        regionChartInstance.data.datasets[0].data = Object.values(regionCounts);
+        regionChartInstance.update();
+      }
+    }
+
+    function renderServiceScorecard() {
+      const container = document.getElementById('serviceScorecardContainer');
+      if (allIncidents.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500 py-4 text-center">No service telemetry logged yet.</p>';
+        return;
+      }
+
+      const svcMap = {};
+      allIncidents.forEach(i => {
+        const name = i.service_name || 'unknown';
+        if (!svcMap[name]) svcMap[name] = { totalDowntime: 0, count: 0, criticals: 0 };
+        svcMap[name].count++;
+        svcMap[name].totalDowntime += (i.downtime_minutes || 0);
+        if ((i.severity || '').toLowerCase() === 'critical') svcMap[name].criticals++;
+      });
+
+      const items = Object.entries(svcMap).map(([name, data]) => {
+        const healthScore = Math.max(70, 100 - (data.totalDowntime * 0.3) - (data.criticals * 5)).toFixed(0);
+        const barColor = healthScore > 90 ? 'bg-emerald-500' : healthScore > 80 ? 'bg-amber-500' : 'bg-rose-500';
+
+        return `
+          <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-4">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="font-bold text-slate-200 text-xs truncate">${escapeHtml(name)}</span>
+                <span class="font-mono text-[11px] text-slate-400">${data.totalDowntime}m down &bull; ${data.count} incident(s)</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div class="${barColor} h-1.5 rounded-full" style="width: ${healthScore}%"></div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-mono font-bold ${healthScore > 90 ? 'text-emerald-400' : healthScore > 80 ? 'text-amber-400' : 'text-rose-400'}">${healthScore}%</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = items;
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const sev = document.getElementById('severityFilter').value.toLowerCase();
+
+      let filtered = allIncidents.filter(i => {
+        const matchesQuery = (i.service_name || '').toLowerCase().includes(q) ||
+                             (i.region || '').toLowerCase().includes(q);
+
+        if (!matchesQuery) return false;
+
+        if (sev === 'all') return true;
+        if (sev === 'anomaly') return anomalousValues.includes(i.downtime_minutes);
+        return (i.severity || '').toLowerCase() === sev;
+      });
+
+      renderTable(filtered);
+      document.getElementById('filteredCountLabel').innerText = `Showing ${filtered.length} of ${allIncidents.length} total events`;
+    }
+
+    function renderTable(incidents) {
+      const tbody = document.getElementById('incidentsTableBody');
+      if (!incidents || incidents.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+              No matching records found in telemetry ledger.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = incidents.map(item => {
+        const isAnomaly = anomalousValues.includes(item.downtime_minutes);
+        const sevBadge = getSeverityBadge(item.severity);
+        const evalBadge = isAnomaly 
+          ? `<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse inline-flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-400"></i> AI ANOMALY</span>`
+          : `<span class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-800 text-slate-400 border border-slate-700 inline-flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i> Nominal</span>`;
+
+        const formattedDate = item.created_at ? new Date(item.created_at).toLocaleString() : 'Just now';
+
+        return `
+          <tr class="hover:bg-slate-900/60 transition group">
+            <td class="px-4 py-3.5 font-mono font-bold text-slate-400">#${item.id}</td>
+            <td class="px-4 py-3.5 font-semibold text-white flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full ${isAnomaly ? 'bg-rose-500' : 'bg-cyan-500'}"></span>
+              ${escapeHtml(item.service_name)}
+            </td>
+            <td class="px-4 py-3.5">${sevBadge}</td>
+            <td class="px-4 py-3.5 font-mono ${isAnomaly ? 'text-rose-400 font-extrabold text-sm' : 'text-slate-200'}">${item.downtime_minutes}m</td>
+            <td class="px-4 py-3.5 text-slate-400 font-mono">${escapeHtml(item.region || 'global')}</td>
+            <td class="px-4 py-3.5">${evalBadge}</td>
+            <td class="px-4 py-3.5 text-slate-500 text-[11px] font-mono">${formattedDate}</td>
+            <td class="px-4 py-3.5 text-right font-mono">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Committed</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function getSeverityBadge(severity) {
+      const s = (severity || '').toLowerCase();
+      if (s === 'critical') return '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/30">CRITICAL</span>';
+      if (s === 'high') return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">HIGH</span>';
+      if (s === 'medium') return '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">MEDIUM</span>';
+      return '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LOW</span>';
+    }
+
+    async function submitIncident(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
+
+      const payload = {
+        service_name: document.getElementById('serviceName').value,
+        severity: document.getElementById('severity').value,
+        downtime_minutes: parseInt(document.getElementById('downtime').value),
+        region: document.getElementById('region').value
+      };
+
+      try {
+        const res = await fetch('/incidents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          closeModal();
+          document.getElementById('incidentForm').reset();
+          await fetchData();
+        } else {
+          alert('Failed to save incident. Please check console.');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i><span>Commit Incident</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function seedDemoData() {
+      const btn = document.getElementById('seedBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Ingesting...`;
+
+      try {
+        const res = await fetch('/seed', { method: 'POST' });
+        if (res.ok) {
+          await fetchData();
+        }
+      } catch (err) {
+        console.error('Seeding error:', err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Seed Telemetry`;
+        lucide.createIcons();
+      }
+    }
+
+    async function chaosInject() {
+      const randomServices = ['payment-gateway', 'auth-service', 'database-primary', 'redis-cluster', 'k8s-ingress'];
+      const svc = randomServices[Math.floor(Math.random() * randomServices.length)];
+      const severeDowntime = Math.floor(Math.random() * 50) + 55;
+
+      const payload = {
+        service_name: svc,
+        severity: 'critical',
+        downtime_minutes: severeDowntime,
+        region: 'ap-south-1'
+      };
+
+      try {
+        await fetch('/incidents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        await fetchData();
+      } catch (err) {
+        console.error('Chaos error:', err);
+      }
+    }
+
+    function exportCSV() {
+      if (allIncidents.length === 0) {
+        alert('No data to export.');
+        return;
+      }
+
+      let csv = 'ID,Service Name,Severity,Downtime (Minutes),Region,Is Anomaly,Created At\n';
+      allIncidents.forEach(i => {
+        const isAnomaly = anomalousValues.includes(i.downtime_minutes) ? 'YES' : 'NO';
+        csv += `"${i.id}","${i.service_name}","${i.severity}","${i.downtime_minutes}","${i.region}","${isAnomaly}","${i.created_at}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `sentinel_incidents_${Date.now()}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

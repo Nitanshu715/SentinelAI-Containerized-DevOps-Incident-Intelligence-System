@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 from sklearn.ensemble import IsolationForest
@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -38,7 +39,7 @@ def init_db():
             """))
             conn.commit()
     except Exception as e:
-        print(f"Database init warning (will retry on request): {e}")
+        print(f"Database init warning: {e}")
 
 app = FastAPI(title="SentinelAI", description="DevOps Incident Intelligence & Anomaly Detection System")
 
@@ -51,23 +52,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static directory if it exists
-static_dir = BASE_DIR / "static"
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+def get_html_content() -> str:
+    possible_paths = [
+        BASE_DIR / "static" / "index.html",
+        ROOT_DIR / "static" / "index.html",
+        ROOT_DIR / "backend" / "static" / "index.html",
+        Path("backend/static/index.html"),
+        Path("static/index.html"),
+    ]
+    for p in possible_paths:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                return f.read()
+    return "<h1>SentinelAI API is Active. Visit <a href='/docs'>/docs</a> for Swagger UI.</h1>"
 
 @app.on_event("startup")
 def on_startup():
     init_db()
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
+@app.get("/api", response_class=HTMLResponse)
+@app.get("/api/", response_class=HTMLResponse)
 def read_root():
-    index_file = BASE_DIR / "static" / "index.html"
-    if index_file.exists():
-        return FileResponse(str(index_file))
-    return {"message": "SentinelAI API is active. Visit /docs for Swagger documentation."}
+    return HTMLResponse(content=get_html_content())
 
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {"status": "running"}
 
@@ -78,6 +88,7 @@ class IncidentCreate(BaseModel):
     region: str
 
 @app.post("/incidents")
+@app.post("/api/incidents")
 def create_incident(
     incident: Optional[IncidentCreate] = None,
     service_name: Optional[str] = Query(None),
@@ -85,14 +96,13 @@ def create_incident(
     downtime: Optional[int] = Query(None),
     region: Optional[str] = Query(None)
 ):
-    # Support both JSON body and query parameters for full compatibility
     s_name = incident.service_name if incident else service_name
     s_sev = incident.severity if incident else severity
     s_down = incident.downtime_minutes if incident else downtime
     s_reg = incident.region if incident else (region or "global")
 
     if not s_name or s_down is None or not s_sev:
-        return {"error": "Missing required fields (service_name, severity, downtime_minutes)"}
+        return JSONResponse(status_code=400, content={"error": "Missing required fields"})
 
     init_db()
     with engine.connect() as conn:
@@ -107,6 +117,7 @@ def create_incident(
     return {"message": "incident stored"}
 
 @app.get("/incidents")
+@app.get("/api/incidents")
 def get_incidents():
     init_db()
     with engine.connect() as conn:
@@ -116,6 +127,7 @@ def get_incidents():
     return rows
 
 @app.get("/ai/risk-analysis")
+@app.get("/api/ai/risk-analysis")
 def risk_analysis():
     init_db()
     with engine.connect() as conn:
@@ -135,8 +147,8 @@ def risk_analysis():
     return {"anomalous_downtime": anomalies}
 
 @app.post("/seed")
+@app.post("/api/seed")
 def seed_demo_data():
-    """Seeds realistic demo DevOps incident telemetry to immediately showcase ML anomaly detection."""
     init_db()
     demo_records = [
         ("auth-service", "low", 4, "us-east-1"),
@@ -145,8 +157,8 @@ def seed_demo_data():
         ("search-worker", "low", 7, "us-west-2"),
         ("notification-hub", "low", 6, "ap-south-1"),
         ("inventory-db", "medium", 8, "eu-central-1"),
-        ("payment-gateway", "critical", 65, "ap-south-1"),  # Clear Outlier / Anomaly
-        ("checkout-api", "critical", 52, "us-east-1"),      # Clear Outlier / Anomaly
+        ("payment-gateway", "critical", 65, "ap-south-1"),
+        ("checkout-api", "critical", 52, "us-east-1"),
     ]
 
     with engine.connect() as conn:
@@ -157,4 +169,4 @@ def seed_demo_data():
             )
         conn.commit()
 
-    return {"message": "Successfully seeded demo DevOps incident telemetry", "count": len(demo_records)}
+    return {"message": "Successfully seeded demo DevOps incident telemetry", "count": len(demo_records)}

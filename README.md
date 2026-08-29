@@ -11,23 +11,22 @@
 
 ### **Autonomous DevOps Incident Intelligence & Telemetry Anomaly Detection Platform**
 
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Vercel_Cloud-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://sentinel-ai-containerized-dev-ops-i.vercel.app/)
+[![Swagger Docs](https://img.shields.io/badge/📖_API_Docs-Swagger_UI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://sentinel-ai-containerized-dev-ops-i.vercel.app/docs)
 [![Docker](https://img.shields.io/badge/Docker-24.0+-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.135.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.8.0-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <br/>
 
-[Explore Architecture](#-system-architecture) •
-[Interactive Dashboard](#-modern-web-ui-dashboard) •
-[AI Anomaly Engine](#-ai-anomaly-detection-engine) •
-[Docker Implementation](#-container-infrastructure--docker-compose) •
-[Macvlan & Ipvlan](#-networking--macvlan--ipvlan-deep-dive) •
-[Quickstart](#-quickstart-guide) •
-[Free Cloud Deployment](#-100-free-cloud-deployment)
+**[🌐 Live Dashboard](https://sentinel-ai-containerized-dev-ops-i.vercel.app/)** •
+**[📖 Interactive API Docs](https://sentinel-ai-containerized-dev-ops-i.vercel.app/docs)** •
+**[🧠 AI Risk Analysis Endpoint](https://sentinel-ai-containerized-dev-ops-i.vercel.app/ai/risk-analysis)** •
+**[🏗️ Architecture](#-system-architecture)** •
+**[🌐 Networking Guide](#-networking--macvlan--ipvlan-deep-dive)**
 
 </div>
 
@@ -35,19 +34,32 @@
 
 ## 🌟 Executive Overview
 
-**SentinelAI** is an enterprise-grade, containerized DevOps telemetry and incident intelligence platform. In modern distributed cloud infrastructures, SRE and DevOps engineering teams are inundated with thousands of raw alerts, service degradations, and transient connection timeouts. Identifying which outages represent true statistical anomalies vs. routine background noise is critical to reducing **Mean Time to Detection (MTTD)** and **Mean Time to Resolution (MTTR)**.
+**SentinelAI** is an enterprise-grade, containerized DevOps incident intelligence and telemetry analysis system. In distributed modern cloud environments, Site Reliability Engineering (SRE) teams receive massive volumes of infrastructure alerts — database connection timeouts, microservice latency degradations, container crash-loops, and gateway outages. 
 
-SentinelAI provides:
-1. **High-Throughput Incident Ingestion**: Parameterized ACID write path into PostgreSQL 15.
-2. **Unsupervised ML Anomaly Detection**: Isolation Forest model trained on downtime distributions to isolate severe outage anomalies without needing labeled training data.
-3. **Cyberpunk DevOps Observability Dashboard**: High-contrast, dark glassmorphic web UI with real-time multi-chart telemetry, service reliability scorecards, and chaos simulation.
-4. **Production Container Orchestration**: Multi-stage Docker packaging, non-root execution, named volume durability, healthcheck-driven readiness probes, and advanced Macvlan/Ipvlan LAN routing specifications.
+Without automated intelligence, distinguishing true statistical anomalies from normal operational noise is challenging, inflating **Mean Time to Detection (MTTD)** and **Mean Time to Resolution (MTTR)**.
+
+SentinelAI solves this by providing:
+* **High-Throughput Ingestion**: Direct ACID parameterized persistence in PostgreSQL 15.
+* **Unsupervised Anomaly Scoring**: Real-time **Isolation Forest** machine learning to detect downtime duration outliers without requiring labeled historical ground truth.
+* **Cyberpunk DevOps Dashboard**: Single-page dark glassmorphic web UI with live multi-chart metrics, microservice reliability scorecards, regional heatmaps, and a chaos simulator.
+* **Production-Grade Containerization**: Multi-stage container builds, non-root least privilege user execution, persistent named volumes, healthcheck readiness probes, and advanced Macvlan/Ipvlan LAN network routing.
+
+---
+
+## 🚀 Live Production Deployments
+
+| Component | Provider | Live URL | Status |
+| :--- | :--- | :--- | :--- |
+| **Observability Dashboard** | Vercel Edge Global CDN | [https://sentinel-ai-containerized-dev-ops-i.vercel.app/](https://sentinel-ai-containerized-dev-ops-i.vercel.app/) | ![Operational](https://img.shields.io/badge/Status-Operational-brightgreen) |
+| **OpenAPI / Swagger UI** | Vercel Serverless Python | [https://sentinel-ai-containerized-dev-ops-i.vercel.app/docs](https://sentinel-ai-containerized-dev-ops-i.vercel.app/docs) | ![Operational](https://img.shields.io/badge/Status-Operational-brightgreen) |
+| **AI Anomaly Inference** | Scikit-Learn Engine | [https://sentinel-ai-containerized-dev-ops-i.vercel.app/ai/risk-analysis](https://sentinel-ai-containerized-dev-ops-i.vercel.app/ai/risk-analysis) | ![Operational](https://img.shields.io/badge/Status-Operational-brightgreen) |
+| **Managed Cloud DB** | Neon Serverless PostgreSQL | `aws-us-east-2 (Ohio)` | ![Active](https://img.shields.io/badge/Status-Active-brightgreen) |
 
 ---
 
 ## 🖥️ Modern Web UI Dashboard
 
-SentinelAI comes equipped with a real-time single-page observability dashboard built with **Tailwind CSS**, **Lucide Icons**, and **Chart.js**:
+SentinelAI features an interactive, dark-mode observability dashboard powered by **Tailwind CSS**, **Lucide Icons**, and **Chart.js**:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────┐
@@ -67,11 +79,12 @@ SentinelAI comes equipped with a real-time single-page observability dashboard b
 └────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Dashboard Capabilities
-* **Dynamic Visualization Suite**: Main downtime timeline with glowing red anomaly markers, severity doughnut distribution, and cloud zone bar charts.
-* **Microservice Health Scorecard**: Auto-calculates uptime reliability percentages ($70\% - 100\%$) for every microservice.
-* **Chaos / Outage Injector**: Injects random high-severity outage spikes to watch the unsupervised ML engine detect and tag anomalies in real time.
-* **Telemetry Ledger & CSV Export**: Searchable incident table with 1-click export for incident postmortems.
+### Key UI Capabilities:
+* **Interactive Timeline**: Real-time incident durations with AI-flagged anomaly bars glowing in pulsing red/rose. Switchable between **Bar Mode** and **Spline Curve Mode**.
+* **Microservice Reliability Scorecard**: Real-time SLA reliability scores ($70\% - 100\%$) and total downtime tracking per microservice (`payment-gateway`, `auth-service`, `database-cluster`).
+* **Regional Cloud Heatmap**: Categorized bar breakdown of outages across global AWS/GCP/Azure cloud zones.
+* **Chaos / Outage Simulator**: Injects synthetic high-severity outage events to test real-time ML anomaly detection.
+* **Incident Ledger & CSV Export**: Searchable data table with severity badges and 1-click export for incident postmortems.
 
 ---
 
@@ -79,33 +92,28 @@ SentinelAI comes equipped with a real-time single-page observability dashboard b
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Ingestion & Observability Clients"]
-        Browser["🌐 Web Browser / Modern Dashboard"]
-        Swagger["📖 OpenAPI / Swagger Docs (/docs)"]
-        Webhook["⚡ CI/CD & Monitoring Webhooks"]
+    subgraph Clients["Ingress & Observability Layer"]
+        Browser["🌐 Live Dashboard Web UI<br/>(Tailwind + Chart.js)"]
+        Swagger["📖 Interactive Swagger Docs<br/>(/docs)"]
+        Webhook["⚡ External Monitoring & CI/CD<br/>(POST /incidents)"]
     end
 
-    subgraph DockerHost["Docker Container Stack (sentinel-net)"]
-        subgraph Backend["sentinel-backend (FastAPI + Uvicorn)"]
-            Router["API Router: /incidents, /health, /seed"]
-            MLEngine["🧠 Isolation Forest Engine (scikit-learn)"]
-            StaticUI["🎨 Dashboard Static Engine (/static)"]
-            DBPool["🗄️ SQLAlchemy 2.0 Pool (psycopg2)"]
-        end
-
-        subgraph Database["sentinel-db (PostgreSQL 15)"]
-            InitHook["/docker-entrypoint-initdb.d/init.sql"]
-            PostgresCore["PostgreSQL Server (:5432)"]
-        end
+    subgraph Platform["Compute Layer (sentinel-backend)"]
+        Router["FastAPI ASGI Router & CORS Engine"]
+        MLEngine["🧠 Isolation Forest Anomaly Pipeline<br/>(scikit-learn 1.8)"]
+        StaticUI["🎨 Dashboard Rendering Engine<br/>(/static)"]
+        DBPool["🗄️ SQLAlchemy 2.0 Connection Pool<br/>(psycopg2-binary)"]
     end
 
-    subgraph Storage["Persistent Host Storage"]
-        NamedVolume[("💾 Docker Named Volume: postgres_data<br/>/var/lib/postgresql/data")]
+    subgraph StorageLayer["Data & Persistence Layer"]
+        PostgresCore["🐘 PostgreSQL 15 Relational Core<br/>(:5432)"]
+        InitHook["⚡ /docker-entrypoint-initdb.d/init.sql"]
+        NamedVolume[("💾 Managed Named Volume: postgres_data<br/>/var/lib/postgresql/data")]
     end
 
     Browser -->|HTTP :8000| Router
     Swagger -->|HTTP :8000| Router
-    Webhook -->|POST /incidents| Router
+    Webhook -->|JSON Payload| Router
     Router --> StaticUI
     Router --> MLEngine
     Router --> DBPool
@@ -119,7 +127,7 @@ flowchart TD
 ## 🔬 AI Anomaly Detection Engine
 
 ### Algorithm: Isolation Forest
-SentinelAI utilizes **Isolation Forest**, an unsupervised tree ensemble algorithm built on the premise that **anomalous observations are few and structurally distinct**, making them easier to isolate than nominal data points.
+SentinelAI utilizes **Isolation Forest**, an unsupervised tree ensemble algorithm built on the premise that **anomalous observations are few and structurally distinct**, making them significantly easier to isolate than nominal data points.
 
 ```
        [Root Dataset: All Downtimes]
@@ -132,16 +140,16 @@ SentinelAI utilizes **Isolation Forest**, an unsupervised tree ensemble algorith
 ```
 
 ### Mathematical Formulation
-1. An ensemble of $t$ randomized Isolation Trees (iTrees) is constructed.
-2. Given a feature instance $x$ (downtime duration) and subsample size $n$, the path length $h(x)$ is the number of edges $x$ traverses from the root node to a terminating leaf node.
-3. The average path length $E(h(x))$ across the ensemble is normalized against the average path length of an unsuccessful search in a Binary Search Tree:
+1. An ensemble of randomized Isolation Trees (iTrees) is constructed.
+2. Given a feature vector $x$ (downtime duration) and subsample size $n$, the path length $h(x)$ is the number of edges $x$ traverses from the root node to a terminating leaf node.
+3. The average path length $E(h(x))$ across all trees is normalized against the average path length of an unsuccessful search in a Binary Search Tree:
    $$c(n) = 2 \ln(n - 1) + 0.5772156649 \text{ (Euler-Mascheroni Constant)} - \frac{2(n - 1)}{n}$$
 4. The composite anomaly score $s(x, n)$ is defined as:
    $$s(x, n) = 2^{-\frac{E(h(x))}{c(n)}}$$
-   * If $s \to 1.0$: Short path length $\rightarrow$ **High confidence anomaly**.
-   * If $s < 0.5$: Long path length $\rightarrow$ **Nominal baseline event**.
+   * If $s \to 1.0$: Short average tree path $\rightarrow$ **High confidence anomaly**.
+   * If $s < 0.5$: Deep average tree path $\rightarrow$ **Nominal baseline event**.
 
-### Backend Implementation (`backend/app.py`)
+### Backend Python Engine (`backend/app.py`)
 ```python
 @app.get("/ai/risk-analysis")
 def risk_analysis():
@@ -152,7 +160,7 @@ def risk_analysis():
     if len(values) < 5:
         return {"message": "not enough incidents"}
 
-    # contamination=0.20 defines the top 20% statistical outlier threshold
+    # contamination=0.20 defines expected 20% statistical outlier distribution
     model = IsolationForest(contamination=0.2, random_state=42)
     model.fit([[v] for v in values])
 
@@ -164,18 +172,19 @@ def risk_analysis():
 
 ---
 
-## 📦 Container Infrastructure & Docker Compose
+## 📦 Container Infrastructure & Docker Implementation
 
-SentinelAI is orchestrated through Docker Compose into two decoupled, containerized services:
+SentinelAI consists of two decoupled microservices orchestrated via Docker Compose:
 
-| Metric / Property | `sentinel-backend` | `sentinel-db` |
+| Property | `sentinel-backend` | `sentinel-db` |
 | :--- | :--- | :--- |
 | **Base Image** | `python:3.11-slim` | `postgres:15` |
-| **Container User** | `appuser` (Non-Root / Least Privilege) | `postgres` |
+| **Build Strategy** | Multi-stage build with non-root user | Custom Dockerfile with `init.sql` |
+| **Security Principle** | Least Privilege (`USER appuser`) | Database container isolation |
 | **Internal Port** | `8000` | `5432` |
-| **Host Port Mapping** | `8000:8000` | Isolated (Internal Network Only) |
-| **Data Persistence** | Stateless | Managed Named Volume (`postgres_data`) |
-| **Health Probe** | `GET /health` (HTTP 200) | `pg_isready -U postgres` |
+| **Host Port Mapping** | `8000:8000` | Internal network only |
+| **State Persistence** | Stateless | Managed Named Volume (`postgres_data`) |
+| **Readiness Probe** | `GET /health` (HTTP 200) | `pg_isready -U postgres` |
 
 ### `docker-compose.yml`
 ```yaml
@@ -224,7 +233,7 @@ networks:
 
 ## 🌐 Networking — Macvlan & Ipvlan Deep Dive
 
-Standard Docker bridge networking places containers behind Network Address Translation (NAT), isolating them from direct physical local area network (LAN) communication. SentinelAI supports advanced layer 2 container network architectures:
+Standard Docker bridge networks isolate containers behind NAT. For scenarios where containers must appear as first-class physical devices on a local LAN, SentinelAI supports **Macvlan** and **Ipvlan L2**:
 
 ```
                       Physical Network Router (192.168.1.1)
@@ -236,24 +245,24 @@ Standard Docker bridge networking places containers behind Network Address Trans
     ┌──────────┴──────────┐
     │  Macvlan / Ipvlan   │
     ├─────────────────────┤
-    │ sentinel-backend    │ ─── IP: 192.168.1.50 (Direct LAN Addressable)
-    │ sentinel-db         │ ─── IP: 192.168.1.51 (Direct LAN Addressable)
+    │ sentinel-backend    │ ─── IP: 192.168.1.50 (Direct LAN Reachability)
+    │ sentinel-db         │ ─── IP: 192.168.1.51 (Direct LAN Reachability)
     └─────────────────────┘
 ```
 
-### Network Architecture Comparison
+### Network Driver Comparison
 
-| Feature | Docker Bridge | Macvlan | Ipvlan L2 |
+| Driver Property | Bridge | Macvlan | Ipvlan L2 |
 | :--- | :--- | :--- | :--- |
-| **Addressing** | Virtual Subnet (172.x.x.x) | Real Physical LAN Subnet | Real Physical LAN Subnet |
-| **MAC Address** | Generated Virtual MAC | Unique Hardware MAC per container | Shared Host Physical MAC |
-| **Routing Overhead** | NAT Port Mapping Required | Zero NAT / Direct L2 Routing | Zero NAT / Direct L2 Routing |
-| **Host Communication**| Accessible via `localhost:PORT` | Requires Host Macvlan Subinterface | Natively Supported by Kernel |
-| **Hardware Requirement**| Cross-Platform | Direct Linux Physical NIC (`eth0`) | Direct Linux Physical NIC (`eth0`) |
+| **Subnet Addressing** | Virtual NAT (172.x.x.x) | Real LAN Subnet (192.168.1.x) | Real LAN Subnet (192.168.1.x) |
+| **Container MAC** | Virtual Generated | Unique Virtual MAC per container | Shared with Host Hardware MAC |
+| **Port Forwarding** | Required (`-p 8000:8000`) | Not Required (Direct IP:Port) | Not Required (Direct IP:Port) |
+| **Host-to-Container**| Native | Blocked (Kernel restriction) | Allowed Natively |
+| **Host Workaround** | None needed | Requires dedicated host subinterface | None needed |
 
-### Production Macvlan Setup (Linux)
+### Macvlan Commands & Host Isolation Resolution (Linux)
 ```bash
-# 1. Create external Macvlan network bound to host physical interface (eth0)
+# 1. Create external Macvlan network bound to host physical NIC (eth0)
 docker network create \
   --driver macvlan \
   --subnet=192.168.1.0/24 \
@@ -261,7 +270,7 @@ docker network create \
   --opt parent=eth0 \
   sentinel-macvlan
 
-# 2. Host Isolation Workaround (Allows host to communicate with containers)
+# 2. Resolve Host-to-Container Isolation (Create Macvlan subinterface on host)
 ip link add macvlan-host link eth0 type macvlan mode bridge
 ip addr add 192.168.1.99/32 dev macvlan-host
 ip link set macvlan-host up
@@ -272,13 +281,13 @@ ip route add 192.168.1.0/24 dev macvlan-host
 
 ## 📚 REST API Reference
 
-The interactive Swagger UI is live at `http://localhost:8000/docs`.
+Interactive Swagger documentation is available at [https://sentinel-ai-containerized-dev-ops-i.vercel.app/docs](https://sentinel-ai-containerized-dev-ops-i.vercel.app/docs).
 
 ### 1. `GET /`
-Returns the modern single-page DevOps intelligence dashboard.
+Serves the modern single-page DevOps cyber dashboard.
 
 ### 2. `GET /health`
-Liveness probe utilized by container orchestrators.
+Liveness probe utilized by orchestrators.
 ```json
 { "status": "running" }
 ```
@@ -323,7 +332,7 @@ Retrieves all recorded telemetry sorted chronologically.
 ```
 
 ### 5. `GET /ai/risk-analysis`
-Executes Isolation Forest anomaly scoring across all stored downtime durations.
+Executes Isolation Forest anomaly detection across all recorded downtime durations.
 ```json
 {
   "anomalous_downtime": [65]
@@ -331,16 +340,13 @@ Executes Isolation Forest anomaly scoring across all stored downtime durations.
 ```
 
 ### 6. `POST /seed`
-Instantly populates realistic multi-service demo telemetry.
+Populates realistic multi-service demo telemetry with nominal events and anomaly outliers.
 
 ---
 
-## 🚀 Quickstart Guide
+## 🛠️ Local Development & Quickstart
 
-### Prerequisites
-* [Docker Desktop 24+](https://www.docker.com/products/docker-desktop)
-* [Git](https://git-scm.com/)
-
+### Option A: Run via Docker Compose (Recommended)
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Nitanshu715/SentinelAI-Containerized-DevOps-Incident-Intelligence-System.git
@@ -349,44 +355,30 @@ cd SentinelAI-Containerized-DevOps-Incident-Intelligence-System
 # 2. Build and launch the container stack
 docker compose up -d --build
 
-# 3. Access the endpoints
-# Dashboard UI: http://localhost:8000
-# OpenAPI Docs: http://localhost:8000/docs
-# Health Probe: http://localhost:8000/health
+# 3. Access local endpoints
+# Dashboard: http://localhost:8000
+# Swagger Docs: http://localhost:8000/docs
 ```
 
----
+### Option B: Run Directly with Python (Localhost)
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Or .\venv\Scripts\Activate.ps1 on Windows
+pip install -r requirements.txt
 
-## ☁️ 100% Free Cloud Deployment
-
-You can deploy SentinelAI publicly to the internet with zero hosting costs using **Neon.tech** and **Vercel** / **Render**:
-
-```mermaid
-flowchart LR
-    A["1. Create Free PostgreSQL<br/>(Neon.tech)"] --> B["2. Deploy App<br/>(Vercel or Render)"]
-    B --> C["3. Add DATABASE_URL<br/>Environment Variable"]
-    C --> D["4. Live Global URL &<br/>Dashboard Online!"]
+# Run FastAPI server
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
 ```
-
-### Step 1: Provision Free Serverless PostgreSQL
-1. Sign up for free at [Neon.tech](https://neon.tech) (No credit card required).
-2. Create a project named `sentinel-db` and copy your **Postgres Connection URI** (`postgresql://user:pass@ep-xyz.aws.neon.tech/neondb?sslmode=require`).
-
-### Step 2: Deploy to Vercel
-1. Fork or push this repository to your GitHub account.
-2. Log into [Vercel.com](https://vercel.com) and click **"Add New Project"**.
-3. Select your repository.
-4. Add the Environment Variable:
-   * **Key**: `DATABASE_URL`
-   * **Value**: *(Your Neon.tech connection string)*
-5. Click **Deploy**. Vercel will build and assign you an SSL-secured live domain (`https://your-project.vercel.app`)!
 
 ---
 
 ## 📂 Project Structure
 
 ```
-sentinel-ai/
+SentinelAI-Containerized-DevOps-Incident-Intelligence-System/
+├── api/
+│   └── index.py            # Vercel Serverless Function entrypoint
 ├── backend/
 │   ├── app.py              # FastAPI server, SQLAlchemy pooling, Isolation Forest
 │   ├── requirements.txt    # Pinned Python dependencies
@@ -397,12 +389,13 @@ sentinel-ai/
 │   ├── Dockerfile          # Custom PostgreSQL 15 container wrapper
 │   └── init.sql            # Idempotent table schema initialization
 ├── docker-compose.yml       # Stack orchestration, volumes, networks, healthchecks
-├── vercel.json             # Vercel serverless Python deployment configuration
+├── vercel.json             # Vercel serverless build and routing configuration
 ├── render.yaml             # Render Blueprint 1-click cloud deployment config
+├── requirements.txt        # Root dependencies for Vercel deployment
 ├── .dockerignore           # Excludes build context overhead (venv, caches)
 ├── .gitignore              # Git ignore configuration
 ├── LICENSE                 # MIT Open Source License
-└── README.md               # Project documentation
+└── README.md               # Comprehensive project documentation
 ```
 
 ---
@@ -411,5 +404,5 @@ sentinel-ai/
 This project is open-source and licensed under the terms of the [MIT License](LICENSE).
 
 <div align="center">
-<b>SentinelAI &bull; Built with ❤️ for DevOps & SRE Teams</b>
+<b>SentinelAI &bull; Built with ❤️ for SRE & DevOps Engineering Teams</b>
 </div>
