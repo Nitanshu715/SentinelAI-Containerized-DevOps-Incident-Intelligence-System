@@ -9,256 +9,177 @@
 ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝
 ```
 
-**Containerized DevOps Incident Intelligence System**
+### **Autonomous DevOps Incident Intelligence & Telemetry Anomaly Detection Platform**
 
-A production-architected, Dockerized backend platform for recording infrastructure incidents,
-persisting operational data in PostgreSQL, and running ML-powered anomaly detection
-to surface abnormal service behaviour — deployed entirely via Docker Compose.
+[![Docker](https://img.shields.io/badge/Docker-24.0+-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.135.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.8.0-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
----
+<br/>
 
-![FastAPI](https://img.shields.io/badge/FastAPI-0.135.1-009688?style=flat-square&logo=fastapi&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-29.2.1-2496ED?style=flat-square&logo=docker&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.8.0-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0.48-CC0000?style=flat-square)
+[Explore Architecture](#-system-architecture) •
+[Interactive Dashboard](#-modern-web-ui-dashboard) •
+[AI Anomaly Engine](#-ai-anomaly-detection-engine) •
+[Docker Implementation](#-container-infrastructure--docker-compose) •
+[Macvlan & Ipvlan](#-networking--macvlan--ipvlan-deep-dive) •
+[Quickstart](#-quickstart-guide) •
+[Free Cloud Deployment](#-100-free-cloud-deployment)
 
 </div>
 
 ---
 
-## Table of Contents
+## 🌟 Executive Overview
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Technology Stack](#technology-stack)
-- [Container Infrastructure](#container-infrastructure)
-- [Docker Implementation](#docker-implementation)
-- [Networking — Macvlan & Ipvlan](#networking--macvlan--ipvlan)
-- [REST API Reference](#rest-api-reference)
-- [AI Anomaly Detection](#ai-anomaly-detection)
-- [Persistent Storage](#persistent-storage)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Deployment Commands](#deployment-commands)
-- [Testing & Verification](#testing--verification)
+**SentinelAI** is an enterprise-grade, containerized DevOps telemetry and incident intelligence platform. In modern distributed cloud infrastructures, SRE and DevOps engineering teams are inundated with thousands of raw alerts, service degradations, and transient connection timeouts. Identifying which outages represent true statistical anomalies vs. routine background noise is critical to reducing **Mean Time to Detection (MTTD)** and **Mean Time to Resolution (MTTR)**.
+
+SentinelAI provides:
+1. **High-Throughput Incident Ingestion**: Parameterized ACID write path into PostgreSQL 15.
+2. **Unsupervised ML Anomaly Detection**: Isolation Forest model trained on downtime distributions to isolate severe outage anomalies without needing labeled training data.
+3. **Cyberpunk DevOps Observability Dashboard**: High-contrast, dark glassmorphic web UI with real-time multi-chart telemetry, service reliability scorecards, and chaos simulation.
+4. **Production Container Orchestration**: Multi-stage Docker packaging, non-root execution, named volume durability, healthcheck-driven readiness probes, and advanced Macvlan/Ipvlan LAN routing specifications.
 
 ---
 
-## Overview
+## 🖥️ Modern Web UI Dashboard
 
-SentinelAI is a two-tier containerized microservice that addresses a real DevOps problem: infrastructure teams receive large volumes of incident reports — API timeouts, database crashes, service degradations — and have no automated mechanism to distinguish statistically abnormal events from routine noise.
-
-The system accepts incident data via a REST API, persists it in a PostgreSQL database running in an isolated container, and exposes a machine learning endpoint that applies Isolation Forest to detect downtime anomalies. The entire stack is containerized using Docker with separate Dockerfiles for the backend and database layers, orchestrated via Docker Compose, and designed around production-grade principles including multi-stage builds, non-root container execution, named volume persistence, healthchecks, and proper service dependency ordering.
-
-The project fulfils all requirements of Project Assignment 1 — Containerized Web Application with PostgreSQL using Docker Compose and Macvlan/Ipvlan — while extending the base specification with a statistically grounded AI layer.
-
----
-
-## Architecture
+SentinelAI comes equipped with a real-time single-page observability dashboard built with **Tailwind CSS**, **Lucide Icons**, and **Chart.js**:
 
 ```
-                        ┌─────────────────────────────┐
-                        │      Client / Browser        │
-                        │   Postman / curl / Swagger   │
-                        └──────────────┬──────────────┘
-                                       │
-                                  HTTP  :8000
-                                       │
-                        ┌──────────────▼──────────────┐
-                        │     sentinel-backend         │
-                        │                              │
-                        │   FastAPI + Uvicorn          │
-                        │   python:3.11-slim           │
-                        │   Multi-stage build          │
-                        │   Non-root: appuser          │
-                        │                              │
-                        │   GET  /health               │
-                        │   POST /incidents            │
-                        │   GET  /incidents            │
-                        │   GET  /ai/risk-analysis     │
-                        │                              │
-                        │   IP: 192.168.1.50 (macvlan) │
-                        └──────────────┬──────────────┘
-                                       │
-                             SQLAlchemy  TCP :5432
-                                       │
-                        ┌──────────────▼──────────────┐
-                        │      sentinel-db             │
-                        │                              │
-                        │   PostgreSQL 15              │
-                        │   Custom Dockerfile          │
-                        │   init.sql auto-runs         │
-                        │                              │
-                        │   IP: 192.168.1.51 (macvlan) │
-                        └──────────────┬──────────────┘
-                                       │
-                              Named Volume Mount
-                                       │
-                        ┌──────────────▼──────────────┐
-                        │    Docker Named Volume       │
-                        │    postgres_data             │
-                        │    /var/lib/postgresql/data  │
-                        │    Persists across restarts  │
-                        └─────────────────────────────┘
-
-                    ╔═══════════════════════════════════╗
-                    ║       sentinel-net                ║
-                    ║   driver: macvlan / bridge        ║
-                    ║   subnet: 192.168.1.0/24          ║
-                    ║   Both containers share network   ║
-                    ╚═══════════════════════════════════╝
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  [🛡️ SentinelAI] Enterprise v2.4   [Simulate Outage] [Seed Telemetry] [Log Inc] │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  [backend: Online]  [sentinel-db: Active]  [ML Engine: Ready]  [Volume: Durable]│
+├────────────────────────────────────────────────────────────────────────────────┤
+│  [Total Events]  [MTTR/Avg]  [AI Outliers]  [Critical]  [Global SLA]  [Regions]│
+├──────────────────────────────────────────────────────┬─────────────────────────┤
+│  📈 Downtime Timeline & Anomaly Boundary            │ 🍩 Severity Breakdown   │
+│     (Interactive Bar & Spline Curve Switcher)        │ 🧠 AI Diagnostics Card  │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│  🛡️ Microservice Reliability Scorecard (SLA Gauge)   │ 🗺️ Regional Heatmap     │
+│     (Uptime % per service: payment, auth, billing)   │    (Cloud Outage Zones) │
+├──────────────────────────────────────────────────────┴─────────────────────────┤
+│  📊 Live Telemetry Ledger (Search, Multi-Filter, Anomaly Badges, Export to CSV)│
+└────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Design Principles
-
-**Separation of concerns** — The backend and database are independent, separately buildable, and separately replaceable. Neither container contains the other's runtime dependencies.
-
-**Immutable infrastructure** — All configuration is injected at runtime via environment variables. No secrets are baked into images.
-
-**Ephemeral containers, durable data** — Containers can be stopped, recreated, or replaced without data loss. State lives in the named volume, not in any container's writable layer.
-
-**Healthcheck-driven orchestration** — The backend does not start until PostgreSQL passes a readiness probe, preventing connection errors at startup.
+### Dashboard Capabilities
+* **Dynamic Visualization Suite**: Main downtime timeline with glowing red anomaly markers, severity doughnut distribution, and cloud zone bar charts.
+* **Microservice Health Scorecard**: Auto-calculates uptime reliability percentages ($70\% - 100\%$) for every microservice.
+* **Chaos / Outage Injector**: Injects random high-severity outage spikes to watch the unsupervised ML engine detect and tag anomalies in real time.
+* **Telemetry Ledger & CSV Export**: Searchable incident table with 1-click export for incident postmortems.
 
 ---
 
-## Technology Stack
+## 🏛️ System Architecture
 
-| Layer | Technology | Version | Role |
-|---|---|---|---|
-| Backend Framework | FastAPI | 0.135.1 | REST API, request routing, auto-documentation |
-| ASGI Server | Uvicorn | 0.41.0 | Production-grade async HTTP server |
-| Database | PostgreSQL | 15 | Relational persistence, ACID transactions |
-| ORM / Query Layer | SQLAlchemy | 2.0.48 | Database connection pooling, parameterized queries |
-| DB Driver | psycopg2-binary | 2.9.11 | Native Python PostgreSQL adapter |
-| ML Framework | scikit-learn | 1.8.0 | Isolation Forest anomaly detection |
-| Numerical Computing | NumPy | 2.4.3 | Feature vector construction for ML pipeline |
-| Container Runtime | Docker Desktop | 29.2.1 | Container image build and execution |
-| Orchestration | Docker Compose | v2 | Multi-container lifecycle management |
-| Networking | Macvlan / Bridge | — | Container network isolation and LAN routing |
-| Language | Python | 3.11 | Application runtime |
+```mermaid
+flowchart TD
+    subgraph Clients["Ingestion & Observability Clients"]
+        Browser["🌐 Web Browser / Modern Dashboard"]
+        Swagger["📖 OpenAPI / Swagger Docs (/docs)"]
+        Webhook["⚡ CI/CD & Monitoring Webhooks"]
+    end
 
----
+    subgraph DockerHost["Docker Container Stack (sentinel-net)"]
+        subgraph Backend["sentinel-backend (FastAPI + Uvicorn)"]
+            Router["API Router: /incidents, /health, /seed"]
+            MLEngine["🧠 Isolation Forest Engine (scikit-learn)"]
+            StaticUI["🎨 Dashboard Static Engine (/static)"]
+            DBPool["🗄️ SQLAlchemy 2.0 Pool (psycopg2)"]
+        end
 
-## Container Infrastructure
+        subgraph Database["sentinel-db (PostgreSQL 15)"]
+            InitHook["/docker-entrypoint-initdb.d/init.sql"]
+            PostgresCore["PostgreSQL Server (:5432)"]
+        end
+    end
 
-SentinelAI consists of exactly two containers. Each is independently built from a custom Dockerfile, communicates over a shared Docker network, and has a clearly defined, non-overlapping responsibility boundary.
+    subgraph Storage["Persistent Host Storage"]
+        NamedVolume[("💾 Docker Named Volume: postgres_data<br/>/var/lib/postgresql/data")]
+    end
 
-### sentinel-backend
-
-Built from `backend/Dockerfile` using a multi-stage Python 3.11-slim base. Runs the FastAPI application via Uvicorn. Handles all API request processing, database interaction via SQLAlchemy, and ML inference via scikit-learn. Runs as a non-root user (`appuser`). Exposes port 8000 to the host.
-
-### sentinel-db
-
-Built from `database/Dockerfile` which wraps the official `postgres:15` image in a custom Dockerfile — **the raw postgres image is not used directly**, in compliance with assignment requirements. Mounts `init.sql` into `/docker-entrypoint-initdb.d/` for automatic table creation on first start. Stores all data in the `postgres_data` named volume. Not directly exposed to the host; only reachable from `sentinel-backend` over the internal Docker network.
-
-### Container Comparison
-
-| Property | sentinel-backend | sentinel-db |
-|---|---|---|
-| Base image | python:3.11-slim | postgres:15 |
-| Build strategy | Multi-stage | Single stage (custom wrap) |
-| Exposed port | 8000 (host) | 5432 (internal only) |
-| User | appuser (non-root) | postgres (default) |
-| Volume | None | postgres_data |
-| Healthcheck | HTTP /health | pg_isready |
-| Restart policy | unless-stopped | unless-stopped |
-
----
-
-## Docker Implementation
-
-### Backend Dockerfile — Multi-Stage Build
-
-Multi-stage builds are a Docker best practice for production images. The build process is split into two stages: a `builder` that installs all Python dependencies (requiring build tools and temporary disk space), and a `runtime` that copies only the compiled package artifacts — resulting in a significantly smaller, attack-surface-reduced final image.
-
-```dockerfile
-# ── Stage 1: Builder ──────────────────────────────────────────────────────────
-FROM python:3.11-slim AS builder
-
-WORKDIR /app
-
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
-
-# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Create non-root user — principle of least privilege
-RUN useradd --create-home --shell /bin/bash appuser
-
-# Copy only compiled packages from builder — no pip cache, no build tools
-COPY --from=builder /install /usr/local
-
-COPY . .
-
-USER appuser
-
-EXPOSE 8000
-
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+    Browser -->|HTTP :8000| Router
+    Swagger -->|HTTP :8000| Router
+    Webhook -->|POST /incidents| Router
+    Router --> StaticUI
+    Router --> MLEngine
+    Router --> DBPool
+    DBPool -->|TCP :5432| PostgresCore
+    InitHook -.->|Initial Schema Boot| PostgresCore
+    PostgresCore -->|ACID Persistence| NamedVolume
 ```
 
-**Why this matters:**
-
-The `--prefix=/install` flag during pip install writes all packages to a dedicated directory, making it trivial to `COPY --from=builder` exactly those files and nothing else into the runtime stage. The final image contains no pip, no build cache, and no compiler toolchains — only what is needed to run.
-
-**Image size impact:**
-
-| Strategy | Approximate Size | Notes |
-|---|---|---|
-| python:latest, single stage | ~950 MB | Full Python distro, all dev tools |
-| python:3.11-slim, single stage | ~280 MB | Slim base, includes pip cache |
-| python:3.11-slim, multi-stage | ~180 MB | Runtime only, no build artifacts |
-
-The multi-stage approach achieves a ~35% reduction over a naive slim single-stage build, and over 80% reduction compared to `python:latest`.
-
 ---
 
-### Database Dockerfile
+## 🔬 AI Anomaly Detection Engine
 
-```dockerfile
-FROM postgres:15
+### Algorithm: Isolation Forest
+SentinelAI utilizes **Isolation Forest**, an unsupervised tree ensemble algorithm built on the premise that **anomalous observations are few and structurally distinct**, making them easier to isolate than nominal data points.
 
-# init.sql runs automatically on first container start
-COPY init.sql /docker-entrypoint-initdb.d/
-
-# Environment defaults — overridden by docker-compose.yml
-ENV POSTGRES_DB=sentinel
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=password
+```
+       [Root Dataset: All Downtimes]
+              /             \
+       [Downtime <= 12]    [Downtime > 12] ─── (Isolated in 1 Split! -> ANOMALY 🚨)
+          /        \
+    [Downtime<=6] [Downtime>6]
+       /    \       /     \
+     ...   ...    ...    ...  ─── (Requires many recursive splits -> NOMINAL ✓)
 ```
 
-Any `.sql` file placed in `/docker-entrypoint-initdb.d/` is executed automatically by the PostgreSQL entrypoint script when the database is first initialized. This provides declarative table creation without requiring a migration tool or runtime setup script.
+### Mathematical Formulation
+1. An ensemble of $t$ randomized Isolation Trees (iTrees) is constructed.
+2. Given a feature instance $x$ (downtime duration) and subsample size $n$, the path length $h(x)$ is the number of edges $x$ traverses from the root node to a terminating leaf node.
+3. The average path length $E(h(x))$ across the ensemble is normalized against the average path length of an unsuccessful search in a Binary Search Tree:
+   $$c(n) = 2 \ln(n - 1) + 0.5772156649 \text{ (Euler-Mascheroni Constant)} - \frac{2(n - 1)}{n}$$
+4. The composite anomaly score $s(x, n)$ is defined as:
+   $$s(x, n) = 2^{-\frac{E(h(x))}{c(n)}}$$
+   * If $s \to 1.0$: Short path length $\rightarrow$ **High confidence anomaly**.
+   * If $s < 0.5$: Long path length $\rightarrow$ **Nominal baseline event**.
 
----
+### Backend Implementation (`backend/app.py`)
+```python
+@app.get("/ai/risk-analysis")
+def risk_analysis():
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT downtime_minutes FROM incidents"))
+        values = [r[0] for r in result]
 
-### init.sql — Schema Definition
+    if len(values) < 5:
+        return {"message": "not enough incidents"}
 
-```sql
-CREATE TABLE IF NOT EXISTS incidents (
-    id               SERIAL PRIMARY KEY,
-    service_name     TEXT,
-    severity         TEXT,
-    downtime_minutes INT,
-    region           TEXT,
-    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    # contamination=0.20 defines the top 20% statistical outlier threshold
+    model = IsolationForest(contamination=0.2, random_state=42)
+    model.fit([[v] for v in values])
+
+    preds = model.predict([[v] for v in values])
+    anomalies = [values[i] for i, p in enumerate(preds) if p == -1]
+
+    return {"anomalous_downtime": anomalies}
 ```
 
-`IF NOT EXISTS` ensures the statement is safe to re-run. `SERIAL PRIMARY KEY` provides auto-incrementing IDs. `created_at` is populated automatically by the database, requiring no input from the application layer.
-
 ---
 
-### docker-compose.yml — Full Stack Orchestration
+## 📦 Container Infrastructure & Docker Compose
 
+SentinelAI is orchestrated through Docker Compose into two decoupled, containerized services:
+
+| Metric / Property | `sentinel-backend` | `sentinel-db` |
+| :--- | :--- | :--- |
+| **Base Image** | `python:3.11-slim` | `postgres:15` |
+| **Container User** | `appuser` (Non-Root / Least Privilege) | `postgres` |
+| **Internal Port** | `8000` | `5432` |
+| **Host Port Mapping** | `8000:8000` | Isolated (Internal Network Only) |
+| **Data Persistence** | Stateless | Managed Named Volume (`postgres_data`) |
+| **Health Probe** | `GET /health` (HTTP 200) | `pg_isready -U postgres` |
+
+### `docker-compose.yml`
 ```yaml
 services:
-
   db:
     build: ./database
     container_name: sentinel-db
@@ -299,512 +220,196 @@ networks:
     driver: bridge
 ```
 
-**Key orchestration decisions:**
-
-`depends_on: condition: service_healthy` — this is a stronger guarantee than a simple `depends_on: db`. The backend container does not start until PostgreSQL has passed its healthcheck (`pg_isready` returning exit code 0), not merely until the container process has started. This eliminates the race condition where the backend attempts a database connection before PostgreSQL has finished initializing.
-
-`pg_isready` is PostgreSQL's built-in readiness utility. It checks whether the server is ready to accept connections, returning 0 on success. The `interval: 10s / timeout: 5s / retries: 5` configuration gives PostgreSQL up to 50 seconds to become ready before Docker marks it unhealthy.
-
-`restart: unless-stopped` ensures containers auto-recover from crashes without manual intervention.
-
 ---
 
-### .dockerignore
+## 🌐 Networking — Macvlan & Ipvlan Deep Dive
 
-The `.dockerignore` file prevents unnecessary files from being included in the Docker build context. Without it, the local `venv/` directory (typically 250–300 MB) gets sent to the Docker daemon on every build, massively inflating build time.
+Standard Docker bridge networking places containers behind Network Address Translation (NAT), isolating them from direct physical local area network (LAN) communication. SentinelAI supports advanced layer 2 container network architectures:
 
 ```
-venv/
-__pycache__/
-*.pyc
-*.pyo
-.env
-.git/
-*.md
+                      Physical Network Router (192.168.1.1)
+                                      │
+               ┌──────────────────────┴──────────────────────┐
+               │                                             │
+      Host NIC (eth0)                               Physical LAN Devices
+               │
+    ┌──────────┴──────────┐
+    │  Macvlan / Ipvlan   │
+    ├─────────────────────┤
+    │ sentinel-backend    │ ─── IP: 192.168.1.50 (Direct LAN Addressable)
+    │ sentinel-db         │ ─── IP: 192.168.1.51 (Direct LAN Addressable)
+    └─────────────────────┘
 ```
 
-With this file in place, the build context drops from ~290 MB to approximately 20 KB — a 99.9% reduction in context transfer overhead.
+### Network Architecture Comparison
 
----
+| Feature | Docker Bridge | Macvlan | Ipvlan L2 |
+| :--- | :--- | :--- | :--- |
+| **Addressing** | Virtual Subnet (172.x.x.x) | Real Physical LAN Subnet | Real Physical LAN Subnet |
+| **MAC Address** | Generated Virtual MAC | Unique Hardware MAC per container | Shared Host Physical MAC |
+| **Routing Overhead** | NAT Port Mapping Required | Zero NAT / Direct L2 Routing | Zero NAT / Direct L2 Routing |
+| **Host Communication**| Accessible via `localhost:PORT` | Requires Host Macvlan Subinterface | Natively Supported by Kernel |
+| **Hardware Requirement**| Cross-Platform | Direct Linux Physical NIC (`eth0`) | Direct Linux Physical NIC (`eth0`) |
 
-## Networking — Macvlan & Ipvlan
-
-### What Macvlan and Ipvlan Do
-
-Standard Docker bridge networking isolates containers behind NAT. The host machine port-forwards traffic to containers via `-p` mappings. Containers are not directly addressable on the local network.
-
-Macvlan and Ipvlan change this fundamentally. They allow Docker containers to appear as first-class physical devices on the LAN, each assigned a real IP address reachable from any host on the network without any port mapping.
-
-| Property | Bridge | Macvlan | Ipvlan L2 |
-|---|---|---|---|
-| Container IP | 172.x.x.x (NAT) | Real LAN IP | Real LAN IP |
-| MAC address per container | Virtual | Unique | Shared with host |
-| LAN reachability | Via port mapping | Direct | Direct |
-| Host-to-container | Via localhost + port | Blocked* | Allowed |
-| Requires Linux NIC access | No | Yes | Yes |
-| Platform support | All platforms | Linux only | Linux only |
-
-*The Macvlan host isolation issue is explained below.
-
----
-
-### Macvlan Network Creation
-
-The following command manually creates the Macvlan network, binding it to the host's physical network interface. This must be run before `docker compose up` when using external macvlan mode.
-
+### Production Macvlan Setup (Linux)
 ```bash
+# 1. Create external Macvlan network bound to host physical interface (eth0)
 docker network create \
   --driver macvlan \
   --subnet=192.168.1.0/24 \
   --gateway=192.168.1.1 \
   --opt parent=eth0 \
   sentinel-macvlan
-```
 
-Parameters:
-
-| Flag | Value | Description |
-|---|---|---|
-| `--driver` | `macvlan` | Use Macvlan driver |
-| `--subnet` | `192.168.1.0/24` | Subnet matching your LAN |
-| `--gateway` | `192.168.1.1` | Your router's IP |
-| `--opt parent` | `eth0` | Host's physical NIC (varies by system) |
-
-After creating the external network, the Compose file references it and assigns static IPs:
-
-```yaml
-networks:
-  sentinel-net:
-    external: true
-    name: sentinel-macvlan
-
-# Per service, replace the networks section:
-services:
-  backend:
-    networks:
-      sentinel-net:
-        ipv4_address: 192.168.1.50
-
-  db:
-    networks:
-      sentinel-net:
-        ipv4_address: 192.168.1.51
-```
-
-With this configuration, the backend is accessible at `http://192.168.1.50:8000` from any device on the LAN — no port mappings required.
-
----
-
-### The Macvlan Host Isolation Issue
-
-When a Macvlan network is created, the host machine **cannot directly communicate with containers on that network**. This is a kernel-level restriction: Macvlan creates virtual MAC addresses as subinterfaces of the physical NIC, and the host NIC cannot send traffic to its own subinterface.
-
-The workaround is to create a dedicated Macvlan interface on the host that bridges into the same network:
-
-```bash
-# Create a macvlan interface on the host pointing to the same parent
+# 2. Host Isolation Workaround (Allows host to communicate with containers)
 ip link add macvlan-host link eth0 type macvlan mode bridge
 ip addr add 192.168.1.99/32 dev macvlan-host
 ip link set macvlan-host up
-
-# Add route so host can reach container subnet via this interface
 ip route add 192.168.1.0/24 dev macvlan-host
 ```
 
-This gives the host machine an IP (`192.168.1.99`) on the Macvlan network, restoring bidirectional communication.
-
-Ipvlan avoids this problem entirely by sharing the host's MAC address across all containers — the kernel has no restriction on traffic between the host and containers sharing its MAC.
-
 ---
 
-### Windows Docker Desktop Note
+## 📚 REST API Reference
 
-Macvlan and Ipvlan require direct kernel access to a physical Linux NIC (`eth0`, `ens33`, etc.). Docker Desktop on Windows runs containers inside a WSL2 Linux virtual machine. The VM's network interface is virtualized and not exposed to the Docker daemon with a Linux-standard name, causing the error:
+The interactive Swagger UI is live at `http://localhost:8000/docs`.
 
-```
-invalid subinterface vlan name Ethernet, example formatting is eth0.10
-```
+### 1. `GET /`
+Returns the modern single-page DevOps intelligence dashboard.
 
-For local Windows development, the Compose file uses `driver: bridge`. The Macvlan architecture, network creation commands, static IP assignments, and host isolation handling are all correctly documented and production-ready for Linux deployment.
-
----
-
-## REST API Reference
-
-The API is built with FastAPI, which automatically generates interactive Swagger documentation at `http://localhost:8000/docs`. All endpoints are accessible via browser or any HTTP client.
-
----
-
-### `GET /health`
-
-Liveness probe. Used by Docker healthchecks and external monitoring systems to verify the backend service is operational.
-
-**Response:**
+### 2. `GET /health`
+Liveness probe utilized by container orchestrators.
 ```json
+{ "status": "running" }
+```
+
+### 3. `POST /incidents`
+Records infrastructure incident telemetry into PostgreSQL. Supports both JSON body and URL query parameters.
+```json
+// POST /incidents
 {
-  "status": "running"
+  "service_name": "payment-gateway",
+  "severity": "critical",
+  "downtime_minutes": 65,
+  "region": "ap-south-1"
 }
 ```
-
----
-
-### `POST /incidents`
-
-Records a new infrastructure incident to the PostgreSQL database.
-
-**Query Parameters:**
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `service_name` | string | Yes | Name of the affected service (e.g. `payment-api`) |
-| `severity` | string | Yes | Severity level: `low`, `medium`, `high`, `critical` |
-| `downtime` | integer | Yes | Duration of outage in minutes |
-| `region` | string | Yes | Infrastructure region (e.g. `ap-south-1`, `us-east-1`) |
-
-**Example Request:**
-```
-POST /incidents?service_name=payment-api&severity=critical&downtime=50&region=ap-south-1
-```
-
-**Response:**
+**Response (200 OK):**
 ```json
-{
-  "message": "incident stored"
-}
+{ "message": "incident stored" }
 ```
 
-**Implementation detail:** Parameterized queries via SQLAlchemy's `text()` construct prevent SQL injection. The connection is committed and released via a context manager, ensuring no connection leaks.
-
----
-
-### `GET /incidents`
-
-Retrieves all stored incidents from the database, ordered by insertion.
-
-**Response:**
+### 4. `GET /incidents`
+Retrieves all recorded telemetry sorted chronologically.
 ```json
 [
   {
     "id": 1,
     "service_name": "auth-service",
-    "severity": "high",
-    "downtime_minutes": 5,
+    "severity": "low",
+    "downtime_minutes": 4,
     "region": "us-east-1",
-    "created_at": "2026-03-16T07:15:00"
+    "created_at": "2026-08-30T03:50:00"
   },
   {
     "id": 2,
-    "service_name": "payment-api",
+    "service_name": "payment-gateway",
     "severity": "critical",
-    "downtime_minutes": 50,
+    "downtime_minutes": 65,
     "region": "ap-south-1",
-    "created_at": "2026-03-16T07:16:00"
+    "created_at": "2026-08-30T03:51:00"
   }
 ]
 ```
 
----
-
-### `GET /ai/risk-analysis`
-
-Runs Isolation Forest anomaly detection against all stored `downtime_minutes` values. Returns the subset identified as statistical outliers. Requires a minimum of 5 records for statistical significance.
-
-**Response (sufficient data):**
+### 5. `GET /ai/risk-analysis`
+Executes Isolation Forest anomaly scoring across all stored downtime durations.
 ```json
 {
-  "anomalous_downtime": [50]
+  "anomalous_downtime": [65]
 }
 ```
 
-**Response (insufficient data):**
-```json
-{
-  "message": "not enough incidents"
-}
-```
+### 6. `POST /seed`
+Instantly populates realistic multi-service demo telemetry.
 
 ---
 
-## AI Anomaly Detection
+## 🚀 Quickstart Guide
 
-### Algorithm — Isolation Forest
-
-Isolation Forest is an unsupervised anomaly detection algorithm built on an ensemble of isolation trees. The algorithm operates on a counterintuitive but powerful insight: **anomalous data points are rare and structurally different, so they are easier to isolate than normal points**.
-
-Each tree in the ensemble randomly selects a feature and a split value, recursively partitioning the data. Normal points, which cluster with similar values, require many splits before they are isolated. Anomalous points, which are distant from the cluster, are isolated after very few splits.
-
-The anomaly score for each point is derived from its **average path length** across all trees in the ensemble. Short average path length = anomaly. Long average path length = normal.
-
-### Why Isolation Forest for SentinelAI
-
-| Requirement | Why Isolation Forest Works |
-|---|---|
-| No labeled training data | Fully unsupervised — no need for historical "known anomaly" labels |
-| Small dataset | Effective on datasets with as few as 10–20 points |
-| No distribution assumption | Makes no assumption that downtime values are normally distributed |
-| Fast inference | Tree traversal is O(log n) — suitable for real-time API responses |
-| Single feature | Works well on 1D data (downtime_minutes) without feature engineering |
-
-### Implementation
-
-```python
-from sklearn.ensemble import IsolationForest
-
-@app.get("/ai/risk-analysis")
-def risk_analysis():
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT downtime_minutes FROM incidents"))
-        values = [r[0] for r in result]
-
-    if len(values) < 5:
-        return {"message": "not enough incidents"}
-
-    # contamination=0.2: expect ~20% of data points to be anomalies
-    model = IsolationForest(contamination=0.2)
-
-    # Each value becomes a 1-element feature vector
-    model.fit([[v] for v in values])
-
-    # predict() returns +1 (normal) or -1 (anomaly)
-    preds = model.predict([[v] for v in values])
-
-    # Collect values flagged as anomalies (prediction == -1)
-    anomalies = [values[i] for i, p in enumerate(preds) if p == -1]
-
-    return {"anomalous_downtime": anomalies}
-```
-
-### Worked Example
-
-Given the following incident dataset:
-
-| # | Service | Downtime (min) | Classification |
-|---|---|---|---|
-| 1 | auth-service | 5 | Normal |
-| 2 | payment-api | 6 | Normal |
-| 3 | database | 7 | Normal |
-| 4 | auth-service | 8 | Normal |
-| 5 | gateway | 9 | Normal |
-| 6 | payment-api | 50 | **Anomaly** |
-
-The cluster of values `[5, 6, 7, 8, 9]` requires many splits to isolate any individual member. The value `50` sits far outside the cluster and is isolated after very few splits — yielding a short average path length and a high anomaly score.
-
-API response:
-```json
-{
-  "anomalous_downtime": [50]
-}
-```
-
-### The `contamination` Parameter
-
-`contamination=0.2` sets the expected proportion of anomalies in the dataset. This directly controls the decision threshold applied to anomaly scores. In a production deployment, this value would be calibrated against historical incident data:
-
-| `contamination` | Behaviour |
-|---|---|
-| `0.05` | Only flag extreme statistical outliers |
-| `0.20` | Flag the top 20% most isolated points (SentinelAI default) |
-| `0.40` | Flag a broad range of unusual values |
-
----
-
-## Persistent Storage
-
-### Named Volume Architecture
-
-Docker containers are ephemeral. Any data written to a container's writable layer is destroyed when the container is removed. To persist PostgreSQL data independently of any container's lifecycle, SentinelAI uses a Docker named volume.
-
-```yaml
-volumes:
-  postgres_data:
-```
-
-This top-level declaration creates a managed volume that Docker stores on the host filesystem under `/var/lib/docker/volumes/sentinel-ai_postgres_data/`. It is mounted into the database container at `/var/lib/postgresql/data` — PostgreSQL's default data directory.
-
-The volume survives:
-- `docker compose down` (containers stopped and removed)
-- `docker compose restart`
-- Individual container crashes and restarts
-
-The volume is only removed by:
-- `docker compose down --volumes`
-- `docker volume rm sentinel-ai_postgres_data`
-
-### Persistence Verification Test
-
-The following procedure verifies that data persists correctly across full container lifecycle events:
+### Prerequisites
+* [Docker Desktop 24+](https://www.docker.com/products/docker-desktop)
+* [Git](https://git-scm.com/)
 
 ```bash
-# 1. Start the stack
-docker compose up -d
+# 1. Clone the repository
+git clone https://github.com/Nitanshu715/SentinelAI-Containerized-DevOps-Incident-Intelligence-System.git
+cd SentinelAI-Containerized-DevOps-Incident-Intelligence-System
 
-# 2. Insert test incidents
-# (via POST /incidents through Swagger UI or curl)
+# 2. Build and launch the container stack
+docker compose up -d --build
 
-# 3. Verify data exists
-# GET /incidents should return your inserted records
-
-# 4. Completely stop and remove containers
-docker compose down
-
-# 5. Confirm volume still exists
-docker volume ls
-# Expected: sentinel-ai_postgres_data
-
-# 6. Restart the stack
-docker compose up -d
-
-# 7. Re-verify data
-# GET /incidents should return the SAME records as step 3
+# 3. Access the endpoints
+# Dashboard UI: http://localhost:8000
+# OpenAPI Docs: http://localhost:8000/docs
+# Health Probe: http://localhost:8000/health
 ```
 
 ---
 
-## Project Structure
+## ☁️ 100% Free Cloud Deployment
+
+You can deploy SentinelAI publicly to the internet with zero hosting costs using **Neon.tech** and **Vercel** / **Render**:
+
+```mermaid
+flowchart LR
+    A["1. Create Free PostgreSQL<br/>(Neon.tech)"] --> B["2. Deploy App<br/>(Vercel or Render)"]
+    B --> C["3. Add DATABASE_URL<br/>Environment Variable"]
+    C --> D["4. Live Global URL &<br/>Dashboard Online!"]
+```
+
+### Step 1: Provision Free Serverless PostgreSQL
+1. Sign up for free at [Neon.tech](https://neon.tech) (No credit card required).
+2. Create a project named `sentinel-db` and copy your **Postgres Connection URI** (`postgresql://user:pass@ep-xyz.aws.neon.tech/neondb?sslmode=require`).
+
+### Step 2: Deploy to Vercel
+1. Fork or push this repository to your GitHub account.
+2. Log into [Vercel.com](https://vercel.com) and click **"Add New Project"**.
+3. Select your repository.
+4. Add the Environment Variable:
+   * **Key**: `DATABASE_URL`
+   * **Value**: *(Your Neon.tech connection string)*
+5. Click **Deploy**. Vercel will build and assign you an SSL-secured live domain (`https://your-project.vercel.app`)!
+
+---
+
+## 📂 Project Structure
 
 ```
 sentinel-ai/
-│
 ├── backend/
-│   ├── app.py                  FastAPI application — all endpoints, SQLAlchemy, ML
-│   ├── requirements.txt        Pinned Python dependencies for reproducible builds
-│   ├── Dockerfile              Multi-stage Python build with non-root user
-│   └── .dockerignore           Excludes venv/, __pycache__, .env from build context
-│
+│   ├── app.py              # FastAPI server, SQLAlchemy pooling, Isolation Forest
+│   ├── requirements.txt    # Pinned Python dependencies
+│   ├── Dockerfile          # Multi-stage container build with non-root appuser
+│   └── static/
+│       └── index.html      # Modern Cyber/DevOps Glassmorphism Dashboard UI
 ├── database/
-│   ├── Dockerfile              Custom PostgreSQL 15 image with init.sql
-│   └── init.sql                Schema definition — creates incidents table on startup
-│
-├── docker-compose.yml          Full stack orchestration — services, network, volume
-├── .gitignore                  Excludes venv/, .env, __pycache__, *.pyc
-└── README.md                   This document
+│   ├── Dockerfile          # Custom PostgreSQL 15 container wrapper
+│   └── init.sql            # Idempotent table schema initialization
+├── docker-compose.yml       # Stack orchestration, volumes, networks, healthchecks
+├── vercel.json             # Vercel serverless Python deployment configuration
+├── render.yaml             # Render Blueprint 1-click cloud deployment config
+├── .dockerignore           # Excludes build context overhead (venv, caches)
+├── .gitignore              # Git ignore configuration
+├── LICENSE                 # MIT Open Source License
+└── README.md               # Project documentation
 ```
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-| Tool | Version | Install |
-|---|---|---|
-| Docker Desktop | 29+ | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) |
-| Git | Any | [git-scm.com](https://git-scm.com) |
-
-Python is **not** required on the host machine. The entire runtime is containerized.
-
----
-
-### Quickstart
-
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/sentinel-ai.git
-cd sentinel-ai
-
-# Build both container images
-docker compose build
-
-# Start the full stack
-docker compose up
-
-# API is now live at:
-# http://localhost:8000/docs  —  Interactive Swagger UI
-# http://localhost:8000/health  —  Liveness check
-```
-
----
-
-## Deployment Commands
-
-```bash
-# Build images from Dockerfiles
-docker compose build
-
-# Start all services (foreground — shows logs)
-docker compose up
-
-# Start all services (background)
-docker compose up -d
-
-# Stop and remove containers (volume preserved)
-docker compose down
-
-# Stop and remove containers AND volume (data lost)
-docker compose down --volumes
-
-# View running containers
-docker ps
-
-# View backend logs
-docker logs sentinel-backend
-
-# View database logs
-docker logs sentinel-db
-
-# Inspect Docker network
-docker network ls
-docker network inspect sentinel-ai_sentinel-net
-
-# List volumes
-docker volume ls
-
-# Open PostgreSQL shell directly
-docker exec -it sentinel-db psql -U postgres -d sentinel
-
-# Rebuild without cache (after Dockerfile changes)
-docker compose build --no-cache
-```
-
----
-
-## Testing & Verification
-
-### Required Screenshot Evidence
-
-The following screenshots are required as assignment proof. Capture them after successfully running `docker compose up`.
-
-**Screenshot — Swagger UI**
-Open `http://localhost:8000/docs` in a browser. Captures proof that the backend API container is running and API documentation is accessible.
-
-**Screenshot — Health Endpoint**
-Execute `GET /health` in Swagger. Expected response: `{ "status": "running" }`. Proves backend is responding to requests.
-
-**Screenshot — Insert Incident**
-Execute `POST /incidents` with `service_name=payment-api`, `severity=critical`, `downtime=50`, `region=ap-south-1`. Expected: `{ "message": "incident stored" }`. Proves write path to PostgreSQL is operational.
-
-**Screenshot — Fetch Incidents**
-Execute `GET /incidents`. Expected: JSON array of all inserted records. Proves read path from PostgreSQL is operational.
-
-**Screenshot — AI Risk Analysis**
-After inserting 5+ incidents, execute `GET /ai/risk-analysis`. Expected: `{ "anomalous_downtime": [50] }`. Proves ML endpoint is functioning.
-
-**Screenshot — Running Containers**
-```bash
-docker ps
-```
-Shows both `sentinel-backend` and `sentinel-db` containers with status `Up`.
-
-**Screenshot — Network Inspection**
-```bash
-docker network inspect sentinel-ai_sentinel-net
-```
-Shows container names, IPs, and network driver configuration.
-
-**Screenshot — Volume**
-```bash
-docker volume ls
-```
-Shows `sentinel-ai_postgres_data` volume exists.
-
-**Screenshot — Persistence Test**
-Run `GET /incidents`, then `docker compose down`, then `docker compose up`, then `GET /incidents` again. Both responses show identical data. Proves named volume persistence.
-
----
+## 📜 License
+This project is open-source and licensed under the terms of the [MIT License](LICENSE).
 
 <div align="center">
-
-**SentinelAI** — Built for Project Assignment 1
-Containerized Web Application with PostgreSQL using Docker Compose and Macvlan/Ipvlan
-
+<b>SentinelAI &bull; Built with ❤️ for DevOps & SRE Teams</b>
 </div>
